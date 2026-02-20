@@ -1,0 +1,121 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "microservices-overview",
+    "title": "Microservices Overview",
+    "tags": ["microservices", "dotnet"],
+    "timezone": "browser",
+    "refresh": "10s",
+    "time": { "from": "now-1h", "to": "now" },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Request Rate (req/s)",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+        "targets": [
+          {
+            "expr": "rate(http_server_request_duration_seconds_count[1m])",
+            "legendFormat": "{{http_route}} ({{http_request_method}})"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": { "unit": "reqps" }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Response Time p95 (ms)",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_server_request_duration_seconds_bucket[5m])) * 1000",
+            "legendFormat": "{{http_route}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": { "unit": "ms" }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Error Rate (5xx)",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 8 },
+        "targets": [
+          {
+            "expr": "sum(rate(http_server_request_duration_seconds_count{http_response_status_code=~\"5..\"}[5m])) / sum(rate(http_server_request_duration_seconds_count[5m])) * 100",
+            "legendFormat": "Error %"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 1 },
+                { "color": "red", "value": 5 }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Active Requests",
+        "type": "gauge",
+        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 8 },
+        "targets": [
+          {
+            "expr": "sum(http_server_active_requests)",
+            "legendFormat": "Active"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Response Time by Endpoint",
+        "type": "table",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.5, rate(http_server_request_duration_seconds_bucket[5m])) * 1000",
+            "legendFormat": "p50 - {{http_route}}",
+            "format": "table",
+            "instant": true
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "GC Collections",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+        "targets": [
+          {
+            "expr": "rate(process_runtime_dotnet_gc_collections_count[5m])",
+            "legendFormat": "Gen {{generation}}"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Memory Usage (MB)",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+        "targets": [
+          {
+            "expr": "process_runtime_dotnet_gc_heap_size_bytes / 1024 / 1024",
+            "legendFormat": "Heap Size"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": { "unit": "decmbytes" }
+        }
+      }
+    ]
+  },
+  "overwrite": true
+}
